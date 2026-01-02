@@ -270,15 +270,16 @@ function toggleCart() {
     }
 }
 
-function checkoutWA() {
-    // Ganti Alert dengan Toast
+async function checkoutWA() {
+    // 1. Validasi Keranjang
     if (cart.length === 0) { 
-        showToast("Keranjang masih kosong, pilih produk dulu!", "error");
+        showToast("Keranjang kosong!", "error");
         return; 
     }
 
-    const nomorWA = '628123456789'; // GANTI NOMOR WA
+    // --- TIDAK ADA VALIDASI NAMA/WA LAGI ---
 
+    // 2. Ambil Data Pengiriman & Pembayaran
     const shippingRadio = document.querySelector('input[name="pengiriman"]:checked');
     const paymentRadio = document.querySelector('input[name="pembayaran"]:checked');
     
@@ -286,30 +287,88 @@ function checkoutWA() {
     const shippingCost = shippingRadio ? parseInt(shippingRadio.getAttribute('data-ongkir')) : 0;
     const paymentMethod = paymentRadio ? paymentRadio.value : 'Bayar Ditempat';
 
-    let pesan = `Halo kak, saya mau pesan:\n\n`;
+    // 3. Hitung Total & Susun Pesan
     let subtotal = 0;
+    let itemsString = ""; 
+    
+    // Format Pesan Awal (Lebih umum karena data diri belum ada)
+    let pesanWA = `Halo Admin/Bot, saya mau pesan order baru dari Web:\n\n`; 
 
     cart.forEach((item) => {
         const totalItem = item.harga * item.qty;
         subtotal += totalItem;
-        pesan += `- ${item.qty}x ${item.nama} (${formatRupiah(totalItem)})\n`;
+        
+        // Pesan WA
+        pesanWA += `- ${item.qty}x ${item.nama} (${formatRupiah(totalItem)})\n`;
+        
+        // Database
+        itemsString += `${item.nama} (${item.qty}), `;
     });
 
     const grandTotal = subtotal + shippingCost;
+    itemsString = itemsString.slice(0, -2);
 
-    pesan += `\n---------------------------\n`;
-    pesan += `Subtotal: ${formatRupiah(subtotal)}\n`;
+    pesanWA += `\n---------------------------\n`;
+    pesanWA += `Subtotal: ${formatRupiah(subtotal)}\n`;
     pesan += `Pengiriman: ${shippingMethod} (${formatRupiah(shippingCost)})\n`;
-    pesan += `Pembayaran: ${paymentMethod}\n`;
-    pesan += `---------------------------\n`;
-    pesan += `*Total Bayar: ${formatRupiah(grandTotal)}*\n`;
-    
-    if(shippingMethod === 'Diantarkan') {
-        pesan += `\nMohon dikirim ke alamat:\n(Tulis alamat lengkap disini)`;
-    }
+    pesanWA += `Pembayaran: ${paymentMethod}\n`;
+    pesanWA += `---------------------------\n`;
+    pesanWA += `*Total Estimasi: ${formatRupiah(grandTotal)}*\n`;
+    pesanWA += `\nMohon diproses, terima kasih.`; 
+    // Chatbot Anda nanti yang akan membalas: "Siapa nama kakak?" dll.
 
-    window.open(`https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+    // --- PROSES KIRIM KE DATABASE (GOOGLE SHEET) ---
+    showToast("Menghubungkan ke WhatsApp...", "warning");
+    
+    const btnCheckout = document.querySelector('.btn-checkout');
+    btnCheckout.disabled = true;
+    btnCheckout.innerText = "Memproses...";
+
+    try {
+        const payload = {
+            action: 'checkout',
+            nama: 'User Website', // Placeholder (karena belum tau namanya)
+            no_wa: '-',           // Placeholder
+            items: itemsString,
+            total: grandTotal,
+            metode: paymentMethod
+        };
+
+        // Kirim ke Google Script (Rekap Order Masuk)
+        // Kita tidak perlu menunggu (await) response sukses dari Sheet agar lebih cepat ke WA
+        // Namun, fetch tetap dijalankan.
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        }).catch(() => console.log("Gagal log ke sheet, tapi lanjut WA"));
+
+        // Langsung buka WA (Tanpa menunggu database selesai 100% biar cepat)
+        setTimeout(() => {
+            const nomorAdmin = '628123456789'; // GANTI NOMOR WA BOT/ADMIN
+            window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesanWA)}`, '_blank');
+            
+            // Reset
+            cart = [];
+            renderCartItems();
+            calculateTotal();
+            toggleCart();
+            
+            showToast("Beralih ke WhatsApp...", "success");
+        }, 1000);
+
+    } catch (error) {
+        console.error(error);
+        // Fallback jika error
+        const nomorAdmin = '628123456789';
+        window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesanWA)}`, '_blank');
+    } finally {
+        setTimeout(() => {
+            btnCheckout.disabled = false;
+            btnCheckout.innerText = "Checkout via WA";
+        }, 2000);
+    }
 }
+
 
 window.onclick = function(event) {
     const modal = document.getElementById('cart-modal');
