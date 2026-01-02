@@ -323,7 +323,7 @@ async function checkoutWA() {
     btnCheckout.disabled = true;
     btnCheckout.innerText = "Memproses...";
     
-    const nomorAdmin = '6285165968482'; // GANTI NOMOR WA
+    const nomorAdmin = '6285165868482'; // GANTI NOMOR WA
 
     try {
         // PAYLOAD TERBARU (Update disini)
