@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Admin Toko</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS KHUSUS ADMIN (Bisa dipindah ke style.css nanti) */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f4f4f4; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-box {
+            background: white; padding: 30px; border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 300px;
+        }
+        .admin-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px;
+        }
+        .stat-card {
+            background: #25D366; color: white; padding: 15px; border-radius: 8px;
+            display: inline-block; margin-right: 10px; min-width: 150px;
+        }
+        .stat-card.warning { background: #ff9800; }
+        
+        /* Tabel Admin */
+        .table-responsive { overflow-x: auto; }
+        .admin-table {
+            width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;
+        }
+        .admin-table th, .admin-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        .admin-table th { background: #333; color: white; }
+        .admin-table img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+        
+        /* Tombol Aksi */
+        .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: none; color: white; margin-right: 2px;}
+        .btn-edit { background: #2196F3; }
+        .btn-delete { background: #f44336; }
+        .btn-add-new { background: #25D366; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        /* Form di Modal */
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="login-overlay">
+        <div class="login-box">
+            <h2>Login Admin</h2>
+            <p>Masukkan PIN Keamanan</p>
+            <input type="password" id="admin-pin" placeholder="PIN..." style="padding: 10px; width: 80%; margin-bottom: 10px;">
+            <br>
+            <button onclick="checkLogin()" class="btn-add-new">Masuk</button>
+        </div>
+    </div>
+
+    <div id="admin-panel" style="display: none; max-width: 1000px; margin: 0 auto; padding: 20px;">
+        
+        <div class="admin-header">
+            <div>
+                <h1>Dashboard Toko</h1>
+                <p>Kelola produk dan stok Anda disini</p>
+            </div>
+            <button onclick="logout()" style="background:#333; color:white; border:none; padding:10px; cursor:pointer; border-radius:5px;">Logout</button>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div class="stat-card">
+                <h3>Total Produk</h3>
+                <span id="total-products" style="font-size: 24px; font-weight:bold;">0</span>
+            </div>
+            <div class="stat-card warning">
+                <h3>Stok Menipis</h3>
+                <span id="low-stock-count" style="font-size: 24px; font-weight:bold;">0</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn-add-new" onclick="openModal('add')" style="white-space:nowrap;">+ Produk</button>
+            <input type="text" id="admin-search" placeholder="Cari produk..." onkeyup="searchAdmin()" style="width:100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+        </div>
+        
+        <div class="desktop-view table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nama Produk</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-tbody">
+                    </tbody>
+            </table>
+        </div>
+        
+        <div id="mobile-view" class="mobile-grid">
+            </div>
+    </div>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Tambah Produk</h2>
+            
+            <form id="product-form" onsubmit="event.preventDefault(); saveProduct();">
+                <input type="hidden" id="edit-id">
+
+                
+
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="inp-nama" required>
+                </div>
+
+                
+                
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <input type="text" id="inp-kategori" placeholder="Makanan, Minuman, dll" list="cat-list">
+                    <datalist id="cat-list">
+                        <option value="Makanan">
+                        <option value="Minuman">
+                        <option value="Snack">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label>Harga (Rp)</label>
+                    <input type="number" id="inp-harga" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Stok Awal</label>
+                    <input type="number" id="inp-stok" required>
+                </div>
+                
+
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="inp-deskripsi" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Foto Produk</label>
+                    
+                    <div style="margin-bottom: 10px; text-align: center;">
+                        <img id="img-preview" src="" style="max-width: 100%; max-height: 200px; display: none; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+                
+                    <input type="file" id="inp-file-gambar" accept="image/*" onchange="previewAndCompressImage(this)">
+                    
+                    <input type="hidden" id="inp-gambar-lama">
+                    
+                    <small style="color:#666; display:block; margin-top:5px;">
+                        Format: JPG/PNG. Otomatis dikompres & upload ke Drive.
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-add-new" id="btn-save" style="width:100%;">Simpan Produk</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div id="confirm-modal" class="modal" style="z-index: 2500;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="margin-bottom: 15px;">
+                <span style="font-size: 50px;">🗑️</span>
+            </div>
+            <h3>Hapus Produk?</h3>
+            <p id="confirm-msg" style="color: #666; margin-bottom: 25px;">
+                Apakah Anda yakin ingin menghapus produk ini?
+            </p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="closeConfirmModal()" style="background: #ccc; color: #333; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    Batal
+                </button>
+                <button id="btn-confirm-yes" style="background: #ff3b30; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

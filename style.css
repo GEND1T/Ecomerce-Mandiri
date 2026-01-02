@@ -1,0 +1,760 @@
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f8f9fa; color: #333; }
+
+/* Header & Title */
+header { text-align: center; margin-bottom: 20px; }
+h1 { color: #25D366; margin-bottom: 10px; }
+
+/* --- FITUR PENCARIAN & FILTER (BARU) --- */
+.filter-container {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    text-align: center;
+}
+
+#search-input {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    outline: none;
+    box-sizing: border-box; /* Agar padding tidak merusak lebar */
+}
+#search-input:focus { border-color: #25D366; }
+
+/* Kategori Tombol (Scrollable Horizontal) */
+.category-wrapper {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    justify-content: flex-start; /* Ubah ke center jika kategori sedikit */
+    -webkit-overflow-scrolling: touch; /* Smooth scroll di iOS */
+}
+/* Sembunyikan scrollbar tapi tetap bisa discroll */
+.category-wrapper::-webkit-scrollbar { display: none; }
+
+.cat-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    color: #555;
+}
+
+.cat-btn:hover { background-color: #f0f0f0; }
+
+.cat-btn.active {
+    background-color: #25D366;
+    color: white;
+    border-color: #25D366;
+    font-weight: bold;
+}
+
+/* --- GRID PRODUK --- */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #eee;
+}
+
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+
+.img-wrapper {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+}
+
+.img-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+h3 { margin: 10px 0 5px; font-size: 1.1em; }
+.desc { font-size: 0.9em; color: #888; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2; }
+.price { color: #25D366; font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+
+/* --- TOMBOL AKSI --- */
+.action-area { min-height: 40px; display: flex; align-items: center; justify-content: center; }
+
+.btn-initial {
+    background-color: #25D366;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.btn-initial:hover { background-color: #1ebc57; }
+
+.qty-control {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 5px;
+}
+
+.btn-qty {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    color: #555;
+}
+
+.btn-confirm {
+    background-color: #25D366;
+    color: white;
+    border: none;
+    padding: 0 15px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    flex-grow: 1;
+}
+
+/* --- KERANJANG & MODAL --- */
+.cart-icon {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #25D366;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    z-index: 1000;
+    transition: transform 0.2s;
+}
+.cart-icon:hover { transform: scale(1.1); }
+
+#cart-count {
+    background: #ff3b30;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    border: 2px solid white;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888; }
+.cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding: 15px 0; }
+.cart-info h4 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
+.cart-info small { color: #888; }
+
+.cart-controls { display: flex; align-items: center; gap: 10px; }
+.cart-controls button {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ddd;
+    background: white; cursor: pointer; color: #555; display: flex; align-items: center; justify-content: center;
+}
+.cart-controls span { font-weight: bold; width: 20px; text-align: center; font-size: 14px; }
+
+.btn-checkout {
+    background-color: #25D366;
+    color: white;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+}
+
+/* ... (CSS SEBELUMNYA TETAP SAMA) ... */
+/* Paste ini di bagian paling bawah atau sesuaikan urutan */
+
+/* --- LABEL STOK & HABIS (BARU) --- */
+
+/* Tampilan Kartu saat Habis */
+.card.out-of-stock {
+    opacity: 0.7;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+.card.out-of-stock .img-wrapper {
+    filter: grayscale(100%); /* Gambar jadi hitam putih */
+}
+
+/* Badge 'Habis' yang menempel di gambar */
+.badge-habis {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff3b30;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Teks Sisa Stok Kecil */
+.stock-info {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+.stock-info.low {
+    color: #ff9800; /* Warna oranye jika stok sedikit */
+}
+
+/* Pesan teks pengganti tombol saat habis */
+.text-habis {
+    color: #d32f2f;
+    font-weight: bold;
+    padding: 10px;
+    background: #ffebee;
+    border-radius: 5px;
+    width: 100%;
+    display: block;
+}
+
+/* Agar posisi badge relatif terhadap wrapper gambar */
+.img-wrapper {
+    position: relative; 
+}
+
+/* ... (CSS SEBELUMNYA TETAP SAMA) ... */
+/* Tambahkan atau update bagian Modal & Checkout di bawah ini */
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* --- OPSI PENGIRIMAN & PEMBAYARAN (BARU) --- */
+.checkout-section {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    text-align: left;
+}
+
+.checkout-section h4 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 15px;
+    border-bottom: 2px solid #25D366;
+    display: inline-block;
+    padding-bottom: 3px;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: flex-start; /* Supaya teks panjang rapi */
+    cursor: pointer;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.radio-label:hover {
+    background-color: #f9f9f9;
+}
+
+.radio-label input {
+    margin-top: 4px;
+    margin-right: 10px;
+    accent-color: #25D366; /* Warna radio button hijau */
+}
+
+.option-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.option-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.option-desc {
+    font-size: 12px;
+    color: #777;
+    margin-top: 2px;
+}
+
+.cost-badge {
+    color: #d32f2f;
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+/* Footer Keranjang */
+.cart-footer {
+    margin-top: 20px;
+    border-top: 2px dashed #ddd;
+    padding-top: 15px;
+}
+
+.cart-footer h3 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    color: #333;
+}
+
+/* ... (CSS SEBELUMNYA TETAP SAMA) ... */
+
+/* --- TOAST NOTIFICATION (BARU) --- */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%); /* Agar tepat di tengah */
+    z-index: 3000; /* Lebih tinggi dari Modal (2000) */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.toast {
+    background-color: #333;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    
+    /* Animasi Masuk */
+    opacity: 0;
+    animation: slideDown 0.4s forwards;
+}
+
+/* Warna berdasarkan tipe pesan */
+.toast.success {
+    background-color: #25D366; /* Hijau WA */
+    border-left: 5px solid #128C7E;
+}
+
+.toast.error {
+    background-color: #ff3b30; /* Merah Error */
+    border-left: 5px solid #b71c1c;
+}
+
+/* Animasi Keluar */
+.toast.hide {
+    animation: fadeOut 0.4s forwards;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* =========================================
+   RESPONSIVE MOBILE (LAYAR < 768px)
+   ========================================= */
+@media screen and (max-width: 768px) {
+
+    /* --- 1. BAGIAN TOKO (FRONTEND) --- */
+    
+    /* Grid Produk: Paksa jadi 2 Kolom di HP (Standar Marketplace) */
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 Kolom rata */
+        gap: 10px; /* Jarak antar kartu lebih rapat */
+    }
+
+    /* Penyesuaian Kartu Produk */
+    .card {
+        padding: 10px; /* Padding lebih kecil */
+    }
+    .img-wrapper {
+        height: 140px; /* Gambar tidak terlalu tinggi */
+    }
+    h3 {
+        font-size: 14px; /* Judul lebih kecil */
+        height: 38px; /* Batasi tinggi judul 2 baris */
+        overflow: hidden;
+    }
+    .price {
+        font-size: 14px;
+    }
+    
+    /* Tombol Aksi (Tambah/Beli) lebih besar agar mudah disentuh jari */
+    .btn-initial, .btn-confirm, .btn-qty {
+        padding: 8px;
+        min-height: 35px;
+    }
+
+    /* Filter & Search */
+    .filter-container {
+        padding: 0 10px;
+    }
+    #search-input {
+        font-size: 14px;
+        padding: 10px 15px;
+    }
+
+    /* Modal Keranjang Full Screen di HP */
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        margin: 0;
+        border-radius: 0;
+        padding: 20px;
+    }
+    
+    /* Toast Notification (Di Tengah Bawah agar tidak menutupi menu atas) */
+    #toast-container {
+        top: auto;
+        bottom: 20px;
+        width: 90%;
+    }
+
+
+    /* --- 2. BAGIAN ADMIN (BACKEND) --- */
+
+    /* Header Admin Jadi Vertikal */
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    /* Statistik berjejer vertikal/kecil */
+    .stat-card {
+        width: 48%; /* Bagi 2 kolom */
+        margin-right: 0;
+        margin-bottom: 10px;
+        font-size: 12px;
+        min-width: auto;
+        box-sizing: border-box;
+    }
+
+    /* --- TRANSFORMASI TABEL JADI KARTU (CARD VIEW) --- */
+    /* Sembunyikan Header Tabel (Nama, Harga, dll) */
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody, .admin-table tr, .admin-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-table tr {
+        margin-bottom: 15px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        padding: 10px;
+        position: relative; /* Untuk posisi tombol delete */
+    }
+
+    .admin-table td {
+        text-align: right; /* Konten di kanan */
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between; /* Label di kiri, Isi di kanan */
+        align-items: center;
+    }
+
+    .admin-table td:last-child {
+        border-bottom: none;
+        justify-content: flex-end; /* Tombol aksi di kanan */
+        padding-top: 15px;
+    }
+
+    /* Menambahkan Label Palsu (Harga:, Stok:) via CSS */
+    .admin-table td::before {
+        content: attr(data-label); /* Ambil teks dari atribut HTML */
+        font-weight: bold;
+        color: #666;
+        text-align: left;
+    }
+
+    /* Khusus kolom gambar */
+    .admin-table td img {
+        width: 60px;
+        height: 60px;
+    }
+}
+/* --- CSS ADMIN DEFAULT (DESKTOP) --- */
+.desktop-view { display: block; }
+.mobile-grid { display: none; } /* Sembunyikan tampilan HP di laptop */
+
+/* --- CSS ADMIN MOBILE (LAYAR HP) --- */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Sembunyikan Tabel Desktop, Munculkan Grid HP */
+    .desktop-view { display: none !important; }
+    .mobile-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+    /* 2. Desain Kartu Admin Mobile */
+    .admin-card-mobile {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 15px;
+        border: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Bagian Atas: Gambar & Info Utama */
+    .ac-header {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        border-bottom: 1px solid #f5f5f5;
+        padding-bottom: 10px;
+    }
+    
+    .ac-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+    }
+
+    .ac-info h4 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
+    .ac-info p { margin: 0; font-size: 14px; color: #666; }
+    .ac-price { color: #25D366; font-weight: bold; font-size: 15px; }
+
+    /* Bagian Tengah: Kontrol Stok (Pill Shape) */
+    .ac-stock-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f9f9f9;
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+    .stock-label { font-size: 13px; color: #555; font-weight: 600; }
+    
+    .stock-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        padding: 2px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+    }
+    .btn-circle {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: #eee;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .stock-val { font-weight: bold; min-width: 20px; text-align: center; }
+
+    /* Bagian Bawah: Tombol Aksi (Full Width) */
+    .ac-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .btn-mobile {
+        flex: 1; /* Bagi rata lebar */
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .btn-mobile.edit { background-color: #e3f2fd; color: #1976D2; }
+    .btn-mobile.del { background-color: #ffebee; color: #c62828; }
+}
+
+/* =========================================
+   PERBAIKAN RESPONSIF MODAL (HP)
+   ========================================= */
+
+   @media screen and (max-width: 768px) {
+    
+    /* 1. Atur Ukuran & Posisi Modal Content */
+    .modal-content {
+        width: 90%;          /* Pakai 90% lebar layar (jangan full 100% biar ada sisa) */
+        margin: 5% auto;     /* Jarak dari atas cuma 5% (biar tidak terlalu turun) */
+        padding: 20px;       /* Padding secukupnya */
+        max-height: 85vh;    /* Maksimal tinggi 85% dari layar HP */
+        overflow-y: auto;    /* PENTING: Agar bisa discroll jika formnya panjang */
+        border-radius: 10px; 
+    }
+
+    /* 2. Judul Modal */
+    .modal-content h2 {
+        font-size: 18px;     /* Judul tidak perlu terlalu besar */
+        margin-top: 0;
+        margin-right: 20px;  /* Kasih jarak biar gak nabrak tombol close */
+    }
+
+    /* 3. Input Form Lebih Ramah Jari */
+    .form-group {
+        margin-bottom: 12px; /* Jarak antar input lebih rapat */
+    }
+    
+    .form-group label {
+        font-size: 14px;     /* Label teks sedikit lebih kecil */
+        margin-bottom: 4px;
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        font-size: 16px;     /* Mencegah iPhone zoom otomatis saat mengetik */
+        padding: 12px;       /* Area ketik lebih luas/nyaman */
+        height: auto;
+    }
+
+    /* 4. Tombol Close (Silang) Lebih Mudah di-Tap */
+    .close-btn {
+        top: 10px;
+        right: 15px;
+        font-size: 32px;     /* Ikon lebih besar */
+        color: #333;
+        background: transparent;
+        line-height: 20px;
+        padding: 5px;        /* Hit area lebih luas */
+    }
+
+    /* 5. Tombol Simpan (Full Width) */
+    #btn-save {
+        padding: 12px;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+}
+/* ... css toast sebelumnya ... */
+
+.toast.warning {
+    background-color: #f57c00; /* Warna Orange */
+    border-left: 5px solid #e65100;
+}
+/* Styling tambahan untuk Modal Konfirmasi */
+#confirm-modal .modal-content {
+    animation: popIn 0.3s ease;
+    
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsif tombol konfirmasi di HP */
+@media screen and (max-width: 768px) {
+    #confirm-modal .modal-content button {
+        flex: 1; /* Tombol jadi sama lebar di HP */
+        padding: 12px;
+    }
+}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Toko Online Saya</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Toko Online Sederhana</h1>
+        <p style="color: #666;">Belanja mudah, langsung lewat WhatsApp</p>
+    </header>
+    
+    <div class="filter-container">
+        <input type="text" id="search-input" placeholder="Cari produk..." onkeyup="searchProducts()">
+        <div class="category-wrapper" id="category-filter">
+            <button class="cat-btn active">Semua</button>
+        </div>
+    </div>
+
+    <div id="product-container" class="grid-container">
+        </div>
+    
+    <div class="cart-icon" onclick="toggleCart()">
+        🛒 <span id="cart-count">0</span>
+    </div>
+    
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="toggleCart()">&times;</span>
+            <h2>Keranjang Belanja</h2>
+            
+            <div id="cart-items"></div>
+
+            <div class="checkout-section">
+                <h4>Metode Pengiriman</h4>
+                <div class="option-group">
+                    <label class="radio-label">
+                        <input type="radio" name="pengiriman" value="Ambil Sendiri" data-ongkir="0" checked onchange="calculateTotal()">
+                        <div class="option-text">
+                            <span class="option-title">Ambil Sendiri</span>
+                            <span class="option-desc">Barang diambil di toko (Gratis)</span>
+                        </div>
+                    </label>
+
+                    <label class="radio-label">
+                        <input type="radio" name="pengiriman" value="Dititipkan" data-ongkir="0" onchange="calculateTotal()">
+                        <div class="option-text">
+                            <span class="option-title">Dititipkan</span>
+                            <span class="option-desc">Di masjid kelompok ketika ada kegiatan (Gratis)</span>
+                        </div>
+                    </label>
+
+                    <label class="radio-label">
+                        <input type="radio" name="pengiriman" value="Diantarkan" data-ongkir="10000" onchange="calculateTotal()">
+                        <div class="option-text">
+                            <span class="option-title">Diantarkan <span class="cost-badge">+Rp 10.000</span></span>
+                            <span class="option-desc">Sampai ke rumah/alamat yang diinginkan</span>
+                        </div>
+                    </label>
+                </div>
+
+                <h4>Metode Pembayaran</h4>
+                <div class="option-group">
+                    <label class="radio-label">
+                        <input type="radio" name="pembayaran" value="Bayar Ditempat" checked>
+                        <div class="option-text">
+                            <span class="option-title">Bayar Ditempat (COD)</span>
+                        </div>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="pembayaran" value="DANA">
+                        <div class="option-text">
+                            <span class="option-title">Transfer DANA</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="cart-footer">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; color: #666;">
+                    <span>Subtotal:</span>
+                    <span id="subtotal-display">Rp 0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 15px; color: #666;">
+                    <span>Ongkir:</span>
+                    <span id="ongkir-display">Rp 0</span>
+                </div>
+                
+                <h3>Total Bayar: <span id="cart-total">Rp 0</span></h3>
+                
+                <button onclick="checkoutWA()" class="btn-checkout">Checkout via WA</button>
+            </div>
+        </div>
+    </div>
+
+        <div id="cart-modal" class="modal">
+        </div>
+    
+    <div id="toast-container"></div>
+
+
+
+    <script src="script.js"></script>
+</body>
+</html>
