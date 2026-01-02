@@ -1,6 +1,7 @@
 // GANTI DENGAN URL APPS SCRIPT ANDA
 const API_URL = 'https://script.google.com/macros/s/AKfycbxO7O0mUZe79JLYvwwx4KtlouINdluBu1UaOR7dNjOGAGpjsH0mEwyPHaGdLgBxotnUsw/exec'; 
-
+// Ganti dengan URL Ngrok Anda sendiri
+const N8N_WEBHOOK_URL = 'https://michell-epidemiological-overapprehensively.ngrok-free.dev/webhook-test/checkout';
 let cart = [];
 let allProducts = [];
 let currentCategory = 'Semua';
@@ -277,8 +278,6 @@ async function checkoutWA() {
         return; 
     }
 
-    // --- TIDAK ADA VALIDASI NAMA/WA LAGI ---
-
     // 2. Ambil Data Pengiriman & Pembayaran
     const shippingRadio = document.querySelector('input[name="pengiriman"]:checked');
     const paymentRadio = document.querySelector('input[name="pembayaran"]:checked');
@@ -291,63 +290,64 @@ async function checkoutWA() {
     let subtotal = 0;
     let itemsString = ""; 
     
-    // Format Pesan Awal (Lebih umum karena data diri belum ada)
+    // Variabel Pesan WA
     let pesanWA = `Halo Admin/Bot, saya mau pesan order baru dari Web:\n\n`; 
 
     cart.forEach((item) => {
         const totalItem = item.harga * item.qty;
         subtotal += totalItem;
         
-        // Pesan WA
+        // Update pesanWA
         pesanWA += `- ${item.qty}x ${item.nama} (${formatRupiah(totalItem)})\n`;
         
-        // Database
+        // Update string database
         itemsString += `${item.nama} (${item.qty}), `;
     });
 
     const grandTotal = subtotal + shippingCost;
     itemsString = itemsString.slice(0, -2);
 
+    // Lanjutkan menyusun pesanWA
     pesanWA += `\n---------------------------\n`;
     pesanWA += `Subtotal: ${formatRupiah(subtotal)}\n`;
-    pesan += `Pengiriman: ${shippingMethod} (${formatRupiah(shippingCost)})\n`;
+    pesanWA += `Pengiriman: ${shippingMethod} (${formatRupiah(shippingCost)})\n`;
     pesanWA += `Pembayaran: ${paymentMethod}\n`;
     pesanWA += `---------------------------\n`;
     pesanWA += `*Total Estimasi: ${formatRupiah(grandTotal)}*\n`;
     pesanWA += `\nMohon diproses, terima kasih.`; 
-    // Chatbot Anda nanti yang akan membalas: "Siapa nama kakak?" dll.
 
-    // --- PROSES KIRIM KE DATABASE (GOOGLE SHEET) ---
+    // --- PROSES KIRIM ---
     showToast("Menghubungkan ke WhatsApp...", "warning");
     
     const btnCheckout = document.querySelector('.btn-checkout');
     btnCheckout.disabled = true;
     btnCheckout.innerText = "Memproses...";
+    
+    const nomorAdmin = '628123456789'; // GANTI NOMOR WA
 
     try {
+        // PAYLOAD TERBARU (Update disini)
         const payload = {
             action: 'checkout',
-            nama: 'User Website', // Placeholder (karena belum tau namanya)
-            no_wa: '-',           // Placeholder
+            nama: '',
+            no_wa: '',
             items: itemsString,
             total: grandTotal,
-            metode: paymentMethod
+            metode: paymentMethod,
+            pengiriman: shippingMethod // Data Baru
         };
 
-        // Kirim ke Google Script (Rekap Order Masuk)
-        // Kita tidak perlu menunggu (await) response sukses dari Sheet agar lebih cepat ke WA
-        // Namun, fetch tetap dijalankan.
+        // Kirim ke Google Sheet
         fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify(payload)
-        }).catch(() => console.log("Gagal log ke sheet, tapi lanjut WA"));
+        }).catch(err => console.log("Log sheet skip:", err));
 
-        // Langsung buka WA (Tanpa menunggu database selesai 100% biar cepat)
+        // Buka WhatsApp
         setTimeout(() => {
-            const nomorAdmin = '628123456789'; // GANTI NOMOR WA BOT/ADMIN
             window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesanWA)}`, '_blank');
             
-            // Reset
+            // Reset Keranjang
             cart = [];
             renderCartItems();
             calculateTotal();
@@ -358,8 +358,6 @@ async function checkoutWA() {
 
     } catch (error) {
         console.error(error);
-        // Fallback jika error
-        const nomorAdmin = '628123456789';
         window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesanWA)}`, '_blank');
     } finally {
         setTimeout(() => {
