@@ -286,87 +286,97 @@ async function checkoutWA() {
     const shippingCost = shippingRadio ? parseInt(shippingRadio.getAttribute('data-ongkir')) : 0;
     const paymentMethod = paymentRadio ? paymentRadio.value : 'Bayar Ditempat';
 
-    // 3. Hitung Total & Susun Pesan
+    // 3. Hitung Total & Siapkan String Item
     let subtotal = 0;
-    let itemsString = ""; 
+    let itemsString = "";      // Untuk Database (Satu baris)
+    let messageItems = "";     // Untuk Body Pesan WA (List ke bawah)
     
-    // Variabel Pesan WA
-    let pesanWA = `Halo Admin/Bot, saya mau pesan order baru dari Web:\n\n`; 
-
     cart.forEach((item) => {
         const totalItem = item.harga * item.qty;
         subtotal += totalItem;
         
-        // Update pesanWA
-        pesanWA += `- ${item.qty}x ${item.nama} (${formatRupiah(totalItem)})\n`;
+        // Susun daftar item untuk pesan WA
+        messageItems += `- ${item.qty}x ${item.nama} (${formatRupiah(totalItem)})\n`;
         
-        // Update string database
+        // Susun string untuk database
         itemsString += `${item.nama} (${item.qty}), `;
     });
 
     const grandTotal = subtotal + shippingCost;
-    itemsString = itemsString.slice(0, -2);
+    itemsString = itemsString.slice(0, -2); // Hapus koma terakhir
 
-    // Lanjutkan menyusun pesanWA
-    pesanWA += `\n---------------------------\n`;
-    pesanWA += `Subtotal: ${formatRupiah(subtotal)}\n`;
-    pesanWA += `Pengiriman: ${shippingMethod} (${formatRupiah(shippingCost)})\n`;
-    pesanWA += `Pembayaran: ${paymentMethod}\n`;
-    pesanWA += `---------------------------\n`;
-    pesanWA += `*Total Estimasi: ${formatRupiah(grandTotal)}*\n`;
-    pesanWA += `\nMohon diproses, terima kasih.`; 
-
-    // --- PROSES KIRIM ---
-    showToast("Menghubungkan ke WhatsApp...", "warning");
+    // 4. UI Loading (Memberi tahu user sedang memproses)
+    showToast("Mencatat pesanan & mengambil ID Order...", "warning");
     
     const btnCheckout = document.querySelector('.btn-checkout');
+    const originalText = btnCheckout.innerText;
     btnCheckout.disabled = true;
-    btnCheckout.innerText = "Memproses...";
+    btnCheckout.innerText = "Memproses..."; // Ubah teks tombol
     
-    const nomorAdmin = '6285165868482'; // GANTI NOMOR WA
+    const nomorAdmin = '6285165868482'; // GANTI NOMOR WA JIKA PERLU
 
     try {
-        // PAYLOAD TERBARU (Update disini)
+        // 5. SIAPKAN PAYLOAD UNTUK SERVER
         const payload = {
             action: 'checkout',
-            nama: '',
-            no_wa: '',
+            nama: 'User Website', // Bisa diganti input nama user jika ada
+            no_wa: '-',
             items: itemsString,
             total: grandTotal,
             metode: paymentMethod,
-            pengiriman: shippingMethod // Data Baru
+            pengiriman: shippingMethod
         };
 
-        // Kirim ke Google Sheet
-        fetch(API_URL, {
+        // 6. KIRIM KE SERVER DAN TUNGGU (AWAIT) BALASAN ID
+        const response = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify(payload)
-        }).catch(err => console.log("Log sheet skip:", err));
+        });
 
-        // Buka WhatsApp
-        setTimeout(() => {
+        const result = await response.json();
+
+        // 7. JIKA SUKSES DAPAT ID, SUSUN PESAN WA
+        if (result.status === 'success' && result.orderId) {
+            const serverOrderId = result.orderId; // INI ID DARI SHEET
+
+            // Susun Pesan WA Akhir
+            let pesanWA = `Halo, saya mau pesan order baru:\n`;
+            pesanWA += `ID Order: *${serverOrderId}*\n\n`; // <--- ID ORDER MASUK SINI
+            pesanWA += messageItems; // Masukkan list barang yang sudah disiapkan tadi
+            pesanWA += `\n---------------------------\n`;
+            pesanWA += `Subtotal: ${formatRupiah(subtotal)}\n`;
+            pesanWA += `Pengiriman: ${shippingMethod} (${formatRupiah(shippingCost)})\n`;
+            pesanWA += `Pembayaran: ${paymentMethod}\n`;
+            pesanWA += `---------------------------\n`;
+            pesanWA += `*Total Bayar: ${formatRupiah(grandTotal)}*\n`;
+            pesanWA += `\nMohon diproses, terima kasih.`;
+
+            // Buka WhatsApp
             window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesanWA)}`, '_blank');
             
-            // Reset Keranjang
+            // Bersihkan Keranjang & UI
             cart = [];
             renderCartItems();
             calculateTotal();
-            toggleCart();
+            toggleCart(); // Tutup modal
             
-            showToast("Beralih ke WhatsApp...", "success");
-        }, 1000);
+            showToast("Berhasil! Beralih ke WhatsApp...", "success");
+
+        } else {
+            throw new Error(result.message || "Gagal mendapatkan ID Order");
+        }
 
     } catch (error) {
         console.error(error);
-        window.open(`https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesanWA)}`, '_blank');
+        showToast("Gagal koneksi ke server. Coba lagi.", "error");
+        // Opsional: Jika gagal koneksi, Anda bisa tetap membuka WA tanpa ID Order (Fallback)
+        // tapi lebih baik membiarkan user mencoba lagi agar data tercatat.
     } finally {
-        setTimeout(() => {
-            btnCheckout.disabled = false;
-            btnCheckout.innerText = "Checkout via WA";
-        }, 2000);
+        // Kembalikan tombol seperti semula
+        btnCheckout.disabled = false;
+        btnCheckout.innerText = originalText;
     }
 }
-
 
 window.onclick = function(event) {
     const modal = document.getElementById('cart-modal');
